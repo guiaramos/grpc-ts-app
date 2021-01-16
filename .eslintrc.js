@@ -1,0 +1,12 @@
+module.exports = {
+  parser: '@typescript-eslint/parser',
+  plugins: ['prettier'],
+  extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module',
+  },
+  rules: {
+    'prettier/prettier': 'error',
+  },
+};
