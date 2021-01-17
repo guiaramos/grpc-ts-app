@@ -1,8 +1,9 @@
 import * as admin from 'firebase-admin';
-import { sendUnaryData, ServerUnaryCall, status, UntypedHandleCall } from '@grpc/grpc-js';
+import { sendUnaryData, ServerUnaryCall, ServerWritableStream, status, UntypedHandleCall } from '@grpc/grpc-js';
 import { TodoService, ITodoServer } from './../../models/todo_grpc_pb';
 import { TodoItem, TodoItems } from './../../models/todo_pb';
 import { ServiceError } from '../utils/error';
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 
 /**
  * package todo
@@ -31,7 +32,7 @@ class Todo implements ITodoServer {
     callback(null, todo);
   }
 
-  public async readTodos(call: ServerUnaryCall<any, any>, callback: sendUnaryData<TodoItems>): Promise<void> {
+  public async readTodos(call: ServerUnaryCall<Empty, Empty>, callback: sendUnaryData<TodoItems>): Promise<void> {
     const db = admin.firestore();
     const collection = db.collection('todos');
     const snapshot = await collection.get();
@@ -48,6 +49,21 @@ class Todo implements ITodoServer {
     });
 
     callback(null, todos);
+  }
+
+  public async readTodosStream(call: ServerWritableStream<Empty, TodoItem>): Promise<void> {
+    const db = admin.firestore();
+    const collection = db.collection('todos');
+    const snapshot = await collection.get();
+
+    snapshot.forEach((doc) => {
+      const todo: TodoItem = new TodoItem();
+      todo.setId(doc.id);
+      todo.setText(doc.data().text);
+      call.write(todo);
+    });
+
+    call.end();
   }
 }
 

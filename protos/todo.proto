@@ -6,6 +6,7 @@ package todoPackage;
 service Todo {
   rpc createTodo(TodoItem) returns (TodoItem);
   rpc readTodos(google.protobuf.Empty) returns (TodoItems);
+  rpc readTodosStream(google.protobuf.Empty) returns (stream TodoItem);
 }
 
 message TodoItem {
